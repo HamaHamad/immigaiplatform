@@ -1,8 +1,23 @@
 import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
-  typescript: true,
+// Lazy initializer — avoids crashing at build time when env vars aren't set
+let _stripe: Stripe | null = null
+export function getStripe(): Stripe {
+  if (!_stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY is not set')
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2024-06-20',
+      typescript: true,
+    })
+  }
+  return _stripe
+}
+
+// Keep backward-compatible named export used in webhook route
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, prop) {
+    return (getStripe() as any)[prop]
+  },
 })
 
 export const PLANS = {
@@ -25,7 +40,7 @@ export const PLANS = {
     name: 'Enterprise',
     priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID!,
     price: 299,
-    credits: -1, // unlimited
+    credits: -1,
     features: [
       'Everything in Professional',
       'Unlimited AI credits',
@@ -48,7 +63,7 @@ export async function createCheckoutSession(
   plan: PlanKey,
   returnUrl: string
 ): Promise<string> {
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     customer_email: userEmail,
     payment_method_types: ['card'],
     mode: 'subscription',
@@ -65,7 +80,7 @@ export async function createPortalSession(
   stripeCustomerId: string,
   returnUrl: string
 ): Promise<string> {
-  const session = await stripe.billingPortal.sessions.create({
+  const session = await getStripe().billingPortal.sessions.create({
     customer:   stripeCustomerId,
     return_url: `${returnUrl}/settings`,
   })

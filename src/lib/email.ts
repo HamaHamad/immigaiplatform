@@ -1,7 +1,12 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.EMAIL_FROM ?? 'ImmigAI <noreply@immigai.com>'
+
+// Lazy initializer — never called at module load time, only inside async functions
+function getResend() {
+  if (!process.env.RESEND_API_KEY) return null
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 interface SendOptions {
   to: string
@@ -10,7 +15,8 @@ interface SendOptions {
 }
 
 async function send({ to, subject, html }: SendOptions) {
-  if (!process.env.RESEND_API_KEY) {
+  const resend = getResend()
+  if (!resend) {
     console.warn('[email] RESEND_API_KEY not set — skipping email to', to)
     return
   }
