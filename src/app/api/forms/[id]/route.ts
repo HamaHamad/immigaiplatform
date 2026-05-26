@@ -21,7 +21,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const ownCase = form.case.userId === session.user.id
   if (!ownForm && !ownCase) {
     const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true, organizationId: true } })
-    if (user?.role !== 'corporate_admin' || user.organizationId !== form.case.organizationId) {
+    if ((user?.role as string) !== 'corporate_admin' || user?.organizationId !== form.case.organizationId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
   }

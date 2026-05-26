@@ -12,13 +12,15 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL
 
 const nextConfig = {
   reactStrictMode: true,
-  serverActions: {
-    allowedOrigins: [
-      'localhost:3000',
-      process.env.VERCEL_URL,
-      safeHostname(appUrl),
-    ].filter(Boolean),
-    bodySizeLimit: '11mb',
+  experimental: {
+    serverActions: {
+      allowedOrigins: [
+        'localhost:3000',
+        process.env.VERCEL_URL,
+        safeHostname(appUrl),
+      ].filter(Boolean),
+      bodySizeLimit: '11mb',
+    },
   },
   images: {
     remotePatterns: [
