@@ -9,7 +9,7 @@ async function requireCaseAccess(caseId: string, userId: string) {
   if (!c) throw new Error('Case not found')
   if (c.userId === userId) return c
   const u = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, organizationId: true } })
-  if (u?.role === 'corporate_admin' && u.organizationId === c.organizationId) return c
+  if ((u?.role as string) === 'corporate_admin' && u?.organizationId === c.organizationId) return c
   throw new Error('Unauthorized')
 }
 

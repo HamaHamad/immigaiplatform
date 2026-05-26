@@ -8,7 +8,7 @@ async function requireDraftAccess(id: string, userId: string) {
   if (!d) return null
   if (d.userId === userId || d.case.userId === userId) return d
   const u = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, organizationId: true } })
-  if (u?.role === 'corporate_admin' && u.organizationId === d.case.organizationId) return d
+  if ((u?.role as string) === 'corporate_admin' && u?.organizationId === d.case.organizationId) return d
   return null
 }
 

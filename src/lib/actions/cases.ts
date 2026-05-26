@@ -33,7 +33,7 @@ async function requireCaseAccess(caseId: string, userId: string): Promise<{ id: 
 
   // Corporate admin check
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, organizationId: true } })
-  if (user?.role === 'corporate_admin' && user.organizationId && user.organizationId === c.organizationId) {
+  if ((user?.role as string) === 'corporate_admin' && user?.organizationId && user.organizationId === c.organizationId) {
     return c
   }
 
@@ -319,7 +319,7 @@ export async function getCasesForUser() {
 
   // Corporate admins also see org cases
   const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { role: true, organizationId: true } })
-  if (dbUser?.role === 'corporate_admin' && dbUser.organizationId) {
+  if ((dbUser?.role as string) === 'corporate_admin' && dbUser?.organizationId) {
     const orgCases = await prisma.case.findMany({
       where: { organizationId: dbUser.organizationId, userId: { not: user.id } },
       include: {

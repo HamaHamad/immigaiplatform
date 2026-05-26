@@ -24,7 +24,7 @@ async function requireDocumentAccess(docId: string, userId: string) {
   if (ownDoc || ownCase) return doc
 
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, organizationId: true } })
-  if (user?.role === 'corporate_admin' && user.organizationId === doc.case.organizationId) return doc
+  if ((user?.role as string) === 'corporate_admin' && user?.organizationId === doc.case.organizationId) return doc
 
   throw new Error('Unauthorized')
 }
@@ -40,7 +40,7 @@ export async function getDocumentsForCase(caseId: string) {
 
   const ownCase = c.userId === user.id
   const dbUser  = await prisma.user.findUnique({ where: { id: user.id }, select: { role: true, organizationId: true } })
-  const corpAdmin = dbUser?.role === 'corporate_admin' && dbUser.organizationId === c.organizationId
+  const corpAdmin = (dbUser?.role as string) === 'corporate_admin' && dbUser?.organizationId === c.organizationId
 
   if (!ownCase && !corpAdmin) return []
 

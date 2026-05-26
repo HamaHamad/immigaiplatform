@@ -22,7 +22,7 @@ async function requireCaseAccess(caseId: string, userId: string) {
   if (!c) throw new Error('Case not found')
   if (c.userId === userId) return c
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, organizationId: true } })
-  if (user?.role === 'corporate_admin' && user.organizationId === c.organizationId) return c
+  if ((user?.role as string) === 'corporate_admin' && user?.organizationId === c.organizationId) return c
   throw new Error('Unauthorized')
 }
 
@@ -104,7 +104,7 @@ export async function saveFormProgress(
   const ownCase = form.case.userId === user.id
   if (!ownForm && !ownCase) {
     const u = await prisma.user.findUnique({ where: { id: user.id }, select: { role: true, organizationId: true } })
-    if (u?.role !== 'corporate_admin' || u.organizationId !== form.case.organizationId) {
+    if ((u?.role as string) !== 'corporate_admin' || u?.organizationId !== form.case.organizationId) {
       return { success: false, error: 'Unauthorized' }
     }
   }
